@@ -6,7 +6,7 @@ $settingValue = 'gtk-application-prefer-dark-theme='
 $exeName = "deluge.exe"
 
 # Scoop install directory
-$scoopInstall = "$env:USERPROFILE\scoop\apps\deluge\*\"
+$scoopInstall = "$env:USERPROFILE\scoop\apps\deluge\current\"
 
 # Default install directory
 $defaultInstallDir = "C:\Program Files\Deluge\"
@@ -66,8 +66,10 @@ if ( $isDefault -Or (Test-Path ($currentInstallPath + $exeName)) ) {
 		}
 		else {
 			# The value exists, replace the value of it
+			# System link issue, current folder and version folder
 			Write-Host "Mod"
-			$fileContent = (Get-Content -Path $currentSettingsPath -Raw) -replace '\r\n', "`n"
+			$fileContent2 = (Get-Content -Path "D:\Personal\Projects\Coding\Powershell\deluge-dark-mode\settings.ini")
+			Write-Host $fileContent2.Count
 
 			Write-Host "Before"
 			foreach ($line in $fileContent) {
@@ -78,7 +80,7 @@ if ( $isDefault -Or (Test-Path ($currentInstallPath + $exeName)) ) {
 			$regex = '^\s*gtk-application-prefer-dark-theme\s*=\s*(true|false)\s*$'
 			$newValue = 'gtk-application-prefer-dark-theme=false'
 
-			(Get-Content $currentSettingsPath) -replace $regex, $newValue | Set-Content $currentSettingsPath
+			$null = (Get-Content $currentSettingsPath) -replace $regex, $newValue | Set-Content -Path $currentSettingsPath -Force
 			Write-Host "After"
 
 			foreach ($line in $fileContent) {
