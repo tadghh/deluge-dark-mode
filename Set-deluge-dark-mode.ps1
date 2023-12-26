@@ -1,4 +1,3 @@
-## TODO: Add paramter to enable or disable
 ## TODO: Check deluge version number
 param(
 	[Parameter()]
@@ -23,14 +22,14 @@ if ( Test-Path ($defaultInstallDir + $exeName)) {
 }
 
 
-# Checks if default exists or if scoop
+# Checks if default exists or if scoop.
 if ( $isDefault -Or (Test-Path ($currentInstallPath + $exeName)) ) {
 	$shareName = "\share"
 	$gtkName = "\gtk-3.0"
 	$settingsFile = "\settings.ini"
 	$validPaths = $true
 
-	# Hopeful Path: Test for share and GTK
+	# Hopeful Path: Test for share and GTK.
 	if (!(Test-Path ($currentInstallPath + $shareName + $gtkName + $settingsFile))) {
 		# Test for share
 		$validPaths = $false
@@ -51,31 +50,30 @@ if ( $isDefault -Or (Test-Path ($currentInstallPath + $exeName)) ) {
 	if ( $validPaths ) {
 		$currentSettingsPath = ($currentInstallPath + $shareName + $gtkName + $settingsFile)
 		$settingsFileContent = Get-Content -Path $currentSettingsPath
-
 		$changes = $false
-		$settingsHeaderExists = $settingsFileContent -contains $settingHeader
 
-		# Write settings $settingHeader
-		if ($false -eq $settingsHeaderExists) {
+		# Missing header section in settings file.
+		if (-not ($settingsFileContent -contains $settingHeader)) {
 			$changes = $true
-			$settingsFileContent += ("`n" + $settingHeader)
+			$settingsFileContent += "`n$settingHeader"
 		}
+
 		$passedModeString = $dt.ToString().ToLower()
-		#Check if value exists already, otherwise add it
 		$darkValueLineNumber = (Select-String -Path $currentSettingsPath -Pattern $settingValue).LineNumber
+
+		# Missing dark mode key, add it.
 		if ($null -eq $darkValueLineNumber) {
 			$changes = $true
-
-			$settingsFileContent += ("`n" + $settingValue + $passedModeString)
+			$settingsFileContent += "`n$settingValue$passedModeString"
 		}
 		else {
 			$changes = $true
 			$valueLineNumber = $darkValueLineNumber - 1
-			# The value exists, replace the value of it
-			#Update file content
-			$settingsFileContent[$valueLineNumber] = ($settingsFileContent[$valueLineNumber] -replace '=.*$', ('=' + $passedModeString))
+
+			# The setting key exists, replace the value of it
+			$settingsFileContent[$valueLineNumber] = $settingsFileContent[$valueLineNumber] -replace '=.*$', "=$passedModeString"
 		}
-		if ($changes -eq $true) {
+		if ($changes) {
 			#We are only adding the header and default dark mode value
 			$settingsFileContent | Set-Content -Path $currentSettingsPath -Force
 		}
