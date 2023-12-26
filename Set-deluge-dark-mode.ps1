@@ -50,32 +50,32 @@ if ( $isDefault -Or (Test-Path ($currentInstallPath + $exeName)) ) {
 
 	if ( $validPaths ) {
 		$currentSettingsPath = ($currentInstallPath + $shareName + $gtkName + $settingsFile)
+		$settingsFileContent = Get-Content -Path $currentSettingsPath
 
-		$temp = $false
-		$settingsHeaderExists = (Get-Content -Path $currentSettingsPath | Select-String $settingHeader -Quiet)
+		$changes = $false
+		$settingsHeaderExists = $settingsFileContent -contains $settingHeader
+
 		# Write settings $settingHeader
-		if (-not $settingsHeaderExists) {
-			Write-Host "Didn't find header"
+		if ($false -eq $settingsHeaderExists) {
+			$changes = $true
 			$settingsFileContent += ("`n" + $settingHeader)
 		}
-
+		$passedModeString = $dt.ToString().ToLower()
 		#Check if value exists already, otherwise add it
-		$darkValueLineNumber = (Select-String -Path $currentSettingsPath -Pattern $settingValue -List).LineNumber
-		if ( $null -eq $darkValueLineNumber) {
-			$settingsFileContent += ("`n" + $settingValue + $dt)
+		$darkValueLineNumber = (Select-String -Path $currentSettingsPath -Pattern $settingValue).LineNumber
+		if ($null -eq $darkValueLineNumber) {
+			$changes = $true
+
+			$settingsFileContent += ("`n" + $settingValue + $passedModeString)
 		}
 		else {
-			$settingsFileContent = Get-Content -Path $currentSettingsPath
+			$changes = $true
+			$valueLineNumber = $darkValueLineNumber - 1
 			# The value exists, replace the value of it
 			#Update file content
-			#Write-Host $darkValueLineNumber
-			$settingsFileContent[$darkValueLineNumber - 1] = ($settingsFileContent[$darkValueLineNumber - 1] -replace '=.*$', ('=' + $dt.ToString().ToLower()))
-
-			#$settingsFileContent[$darkValueLineNumber - 1]
-			$settingsFileContent | Set-Content -Path $currentSettingsPath -Force
-			$temp = $true
+			$settingsFileContent[$valueLineNumber] = ($settingsFileContent[$valueLineNumber] -replace '=.*$', ('=' + $passedModeString))
 		}
-		if ($temp -eq $false) {
+		if ($changes -eq $true) {
 			#We are only adding the header and default dark mode value
 			$settingsFileContent | Set-Content -Path $currentSettingsPath -Force
 		}
