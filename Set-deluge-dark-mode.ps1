@@ -18,6 +18,7 @@ $validInstallPath = $false
 
 # Check install locations
 if ($installLocation) {
+	$installLocation += "\"
 	if ( $installLocation -contains ".exe") {
 		$installLocation = $installLocation.Substring(0, $installLocation.LastIndexOf('\'))
 	}
